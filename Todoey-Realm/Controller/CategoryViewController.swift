@@ -6,10 +6,12 @@
 //
 
 import UIKit
+import RealmSwift
 
 class CategoryViewController: UITableViewController {
     
     var categories:[Category] = []
+    let realm = try! Realm()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -18,7 +20,7 @@ class CategoryViewController: UITableViewController {
 
     // MARK: - TableView DataSource Methods
 
-    override func numberOfSections(in tableView: UITableView) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return categories.count
     }
 
@@ -50,7 +52,14 @@ class CategoryViewController: UITableViewController {
         tableView.reloadData()
     }
     
-    func saveCategories() {
+    func save(category:Category) {
+        do {
+            try realm.write {
+                realm.add(category)
+            }
+        } catch {
+            print("カテゴリーの保存に失敗しました\(error)")
+        }
         tableView.reloadData()
     }
     
@@ -62,7 +71,8 @@ class CategoryViewController: UITableViewController {
         let action = UIAlertAction(title: "追加", style: .default) { _ in
             let newCategory = Category()
             newCategory.name = textField.text!
-            self.saveCategories()
+            self.categories.append(newCategory)
+            self.save(category: newCategory)
         }
         alert.addAction(action)
         alert.addTextField { alertTextField in
