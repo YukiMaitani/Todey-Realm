@@ -6,7 +6,8 @@
 //
 
 import Foundation
+import RealmSwift
 
-class Category:NSObject {
-    var name:String = ""
+class Category:Object {
+    @objc dynamic var name:String = ""
 }
