@@ -10,7 +10,7 @@ import RealmSwift
 
 class CategoryViewController: UITableViewController {
     
-    var categories:[Category] = []
+    var categories: Results<Category>!
     let realm = try! Realm()
 
     override func viewDidLoad() {
@@ -49,6 +49,7 @@ class CategoryViewController: UITableViewController {
     // MARK: - Model Manupulation Methods
     
     func loadCategories() {
+        categories = realm.objects(Category.self)
         tableView.reloadData()
     }
     
@@ -71,7 +72,6 @@ class CategoryViewController: UITableViewController {
         let action = UIAlertAction(title: "追加", style: .default) { _ in
             let newCategory = Category()
             newCategory.name = textField.text!
-            self.categories.append(newCategory)
             self.save(category: newCategory)
         }
         alert.addAction(action)
