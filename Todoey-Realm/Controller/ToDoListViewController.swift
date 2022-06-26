@@ -45,13 +45,24 @@ class ToDoListViewController: UITableViewController {
         do {
             try realm.write{
                 items[indexPath.row].done = !items[indexPath.row].done
-                self.tableView.reloadData()
             }
         } catch {
             print("アイテムの更新に失敗しました\(error)")
         }
+        self.tableView.reloadData()
     }
     
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle,
+                            forRowAt indexPath: IndexPath) {
+        do {
+            try realm.write {
+                realm.delete(items[indexPath.row])
+            }
+        } catch {
+            print("アイテムの削除に失敗しました\(error)")
+        }
+        tableView.reloadData()
+    }
 
     // MARK: - Model Manupulation Methods
     
@@ -59,6 +70,7 @@ class ToDoListViewController: UITableViewController {
         items = selectedCategory?.items.sorted(byKeyPath: "title", ascending: true)
         tableView.reloadData()
     }
+    
     // MARK: - Add New Item
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         var textField = UITextField()
@@ -71,12 +83,12 @@ class ToDoListViewController: UITableViewController {
                         newItem.title = textField.text!
                         newItem.dateCreated = Date()
                         currentCategory.items.append(newItem)
-                        self.tableView.reloadData()
                     }
                 }catch {
                     print("アイテムの保存に失敗しました\(error)")
                 }
             }
+            self.tableView.reloadData()
         }
         alert.addAction(action)
         alert.addTextField { alertTextField in

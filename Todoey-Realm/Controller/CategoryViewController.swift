@@ -46,6 +46,18 @@ class CategoryViewController: UITableViewController {
         }
     }
     
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle,
+                            forRowAt indexPath: IndexPath) {
+        do {
+            try realm.write {
+                realm.delete(categories[indexPath.row])
+            }
+        } catch {
+            print("カテゴリーの削除に失敗しました\(error)")
+        }
+        tableView.reloadData()
+    }
+    
     // MARK: - Model Manupulation Methods
     
     func loadCategories() {
