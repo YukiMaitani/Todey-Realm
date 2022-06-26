@@ -42,7 +42,14 @@ class ToDoListViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        items[indexPath.row].done = !items[indexPath.row].done
+        do {
+            try realm.write{
+                items[indexPath.row].done = !items[indexPath.row].done
+                self.tableView.reloadData()
+            }
+        } catch {
+            print("アイテムの更新に失敗しました\(error)")
+        }
     }
     
 
