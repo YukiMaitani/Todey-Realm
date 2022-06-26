@@ -6,10 +6,12 @@
 //
 
 import UIKit
+import RealmSwift
 
 class ToDoListViewController: UITableViewController {
     
-    var items:[Item] = []
+    let realm = try! Realm()
+    var items:Results<Item>!
     var selectedCategory:Category? {
         didSet {
             loadItems()
@@ -22,8 +24,8 @@ class ToDoListViewController: UITableViewController {
 
     // MARK: - Table view data source
 
-    override func numberOfSections(in tableView: UITableView) -> Int {
-        return items.count
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        items.count
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -32,6 +34,7 @@ class ToDoListViewController: UITableViewController {
         var content = cell.defaultContentConfiguration()
         content.text = item.title
         cell.accessoryType = item.done ? .checkmark : .none
+        cell.contentConfiguration = content
         return cell
     }
     
@@ -40,32 +43,36 @@ class ToDoListViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         items[indexPath.row].done = !items[indexPath.row].done
-        saveItems()
     }
     
 
     // MARK: - Model Manupulation Methods
     
     func loadItems() {
+        items = selectedCategory?.items.sorted(byKeyPath: "title", ascending: true)
         tableView.reloadData()
     }
-    
-    func saveItems() {
-        tableView.reloadData()
-    }
-    
     // MARK: - Add New Item
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         var textField = UITextField()
         let alert = UIAlertController(title: "アイテムを追加します", message: nil, preferredStyle: .alert)
         let action = UIAlertAction(title: "追加", style: .default) { _ in
-            let newCategory = Category()
-            newCategory.name = textField.text!
-            self.saveItems()
+            if let currentCategory = self.selectedCategory {
+                do {
+                    try self.realm.write{
+                        let newItem = Item()
+                        newItem.title = textField.text!
+                        currentCategory.items.append(newItem)
+                        self.tableView.reloadData()
+                    }
+                }catch {
+                    print("アイテムの保存に失敗しました\(error)")
+                }
+            }
         }
         alert.addAction(action)
         alert.addTextField { alertTextField in
-            alertTextField.placeholder = "アイテムーを記入してください"
+            alertTextField.placeholder = "アイテムを記入してください"
             textField = alertTextField
         }
         present(alert, animated: true)
